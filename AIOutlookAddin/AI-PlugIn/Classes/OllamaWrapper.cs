@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using AI_PlugIn.DataStructures;
 
 namespace AI_PlugIn.Classes
 {
@@ -22,22 +23,15 @@ namespace AI_PlugIn.Classes
             ollama = new OllamaApiClient("http://localhost:11434");
         }
 
-        public async Task<IEnumerable<Model>> GetAvilableModelsAsync()
+        public async Task<IEnumerable<string>> GetAvailableModelsAsync()
         {
-            return await ollama.ListLocalModelsAsync();
+            var models = await ollama.ListLocalModelsAsync();
+            return models.Select(m => m.Name);
         }
 
         public async Task<IEnumerable<Model>> GetRunningModelsAsync()
         {
             return await ollama.ListRunningModelsAsync();
-        }
-
-        public List<Message> GetMessages()
-        {
-            return new List<Message>{
-                    new Message(ChatRole.System, "You are a helpful assistant."),
-                    new Message(ChatRole.User, "Hello! Who won the World Cup in 2022?")
-            };
         }
 
         public async Task<string> GetVersionAsync()
@@ -50,8 +44,10 @@ namespace AI_PlugIn.Classes
             return await ollama.IsRunningAsync();
         }
 
-        public async Task<string> ChatResponseAsync(string model, List<Message> messages, bool stream = false, CancellationToken cancellationToken = default)
+        public async Task<Result<string>> ChatResponseAsync(string model, string userPrompt, bool stream = false, CancellationToken cancellationToken = default)
         {
+            List<Message> messages = GetMessages(userPrompt);
+
             ChatRequest chatRequest = new ChatRequest
             {
                 Stream = stream,
@@ -59,9 +55,20 @@ namespace AI_PlugIn.Classes
                 Messages = messages
             };
 
-            StringBuilder sb = new StringBuilder();
-            IAsyncEnumerator<ChatResponseStream> responses = ollama.ChatAsync(chatRequest, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            Result<string> result = new Result<string>();
+            IAsyncEnumerator<ChatResponseStream> responses;
+            try
+            {
+                responses = ollama.ChatAsync(chatRequest, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                result.ErrorEncountered = true;
+                result.Message = ex.Message;
+                return result;
+            }
 
+            StringBuilder sb = new StringBuilder();
             try
             {
                 while (await responses.MoveNextAsync())
@@ -75,11 +82,14 @@ namespace AI_PlugIn.Classes
                 await responses.DisposeAsync();
             }
 
-            return sb.ToString();
+            result.Value = sb.ToString();
+            return result;
         }
 
-        public async Task StreamChatAsync(string model, List<Message> messages, bool stream = true, CancellationToken cancellationToken = default)
+        public async Task StreamChatAsync(string model, string userPrompt, bool stream = true, CancellationToken cancellationToken = default)
         {
+            List<Message> messages = GetMessages(userPrompt);
+
             ChatRequest chatRequest = new ChatRequest
             {   
                 Stream = stream,
@@ -103,6 +113,14 @@ namespace AI_PlugIn.Classes
             {
                 await asyncEnum.DisposeAsync();
             }
+        }
+
+        private List<Message> GetMessages(string userPrompt)
+        {
+            return new List<Message>{
+                    new Message(ChatRole.System, "You are a helpful assistant."),
+                    new Message(ChatRole.User, userPrompt)
+            };
         }
     }
 }

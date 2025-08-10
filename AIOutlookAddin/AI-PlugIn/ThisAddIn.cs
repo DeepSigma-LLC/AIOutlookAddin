@@ -1,11 +1,12 @@
-﻿using System;
+﻿using AI_PlugIn.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Xml.Linq;
-using Outlook = Microsoft.Office.Interop.Outlook;
 using Office = Microsoft.Office.Core;
-using AI_PlugIn.Utilities;
+using Outlook = Microsoft.Office.Interop.Outlook;
 
 namespace AI_PlugIn
 {
@@ -13,6 +14,7 @@ namespace AI_PlugIn
     {
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)

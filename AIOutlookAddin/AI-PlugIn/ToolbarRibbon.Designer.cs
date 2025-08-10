@@ -40,15 +40,15 @@
             this.dropDown_LMModel = this.Factory.CreateRibbonDropDown();
             this.group3 = this.Factory.CreateRibbonGroup();
             this.dropDown_AI_Task = this.Factory.CreateRibbonDropDown();
-            this.button_Run = this.Factory.CreateRibbonButton();
             this.group2 = this.Factory.CreateRibbonGroup();
-            this.button_ConfigEnviornmentPath = this.Factory.CreateRibbonButton();
             this.editBox_PythonVersion = this.Factory.CreateRibbonEditBox();
             this.dropDown_pythonEnvironment = this.Factory.CreateRibbonDropDown();
             this.editBox_environmentVersion = this.Factory.CreateRibbonEditBox();
             this.dropDown_pythonDirectory = this.Factory.CreateRibbonDropDown();
             this.dropDown_pythonSubDirectory = this.Factory.CreateRibbonDropDown();
             this.dropDown_pythonScripts = this.Factory.CreateRibbonDropDown();
+            this.button_Run = this.Factory.CreateRibbonButton();
+            this.button_ConfigEnviornmentPath = this.Factory.CreateRibbonButton();
             this.button_pythonrun = this.Factory.CreateRibbonButton();
             this.tab_AIAddin.SuspendLayout();
             this.group1.SuspendLayout();
@@ -75,13 +75,14 @@
             // 
             this.dropDown_modelSource.Label = "Model Source";
             this.dropDown_modelSource.Name = "dropDown_modelSource";
-            this.dropDown_modelSource.SizeString = "XXXXXXXX";
+            this.dropDown_modelSource.SizeString = "XXXXXXXXXXXX";
+            this.dropDown_modelSource.SelectionChanged += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.dropDown_modelSource_SelectionChanged);
             // 
             // dropDown_LMModel
             // 
             this.dropDown_LMModel.Label = "LM Model";
             this.dropDown_LMModel.Name = "dropDown_LMModel";
-            this.dropDown_LMModel.SizeString = "XXXXXXXXXXXXX";
+            this.dropDown_LMModel.SizeString = "XXXXXXXXXXXXXXXXX";
             // 
             // group3
             // 
@@ -96,15 +97,6 @@
             this.dropDown_AI_Task.Name = "dropDown_AI_Task";
             this.dropDown_AI_Task.SizeString = "XXXXXXXXXXX";
             // 
-            // button_Run
-            // 
-            this.button_Run.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.button_Run.Label = "Run";
-            this.button_Run.Name = "button_Run";
-            this.button_Run.OfficeImageId = "AnimationStartDropdown";
-            this.button_Run.ShowImage = true;
-            this.button_Run.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_Run_Click);
-            // 
             // group2
             // 
             this.group2.Items.Add(this.button_ConfigEnviornmentPath);
@@ -117,15 +109,6 @@
             this.group2.Items.Add(this.button_pythonrun);
             this.group2.Label = "Python";
             this.group2.Name = "group2";
-            // 
-            // button_ConfigEnviornmentPath
-            // 
-            this.button_ConfigEnviornmentPath.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.button_ConfigEnviornmentPath.Label = "Set Environment Path";
-            this.button_ConfigEnviornmentPath.Name = "button_ConfigEnviornmentPath";
-            this.button_ConfigEnviornmentPath.OfficeImageId = "AddInManager";
-            this.button_ConfigEnviornmentPath.ShowImage = true;
-            this.button_ConfigEnviornmentPath.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_ConfigEnviornmentPath_Click);
             // 
             // editBox_PythonVersion
             // 
@@ -165,6 +148,24 @@
             // 
             this.dropDown_pythonScripts.Label = "Script";
             this.dropDown_pythonScripts.Name = "dropDown_pythonScripts";
+            // 
+            // button_Run
+            // 
+            this.button_Run.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.button_Run.Label = "Run";
+            this.button_Run.Name = "button_Run";
+            this.button_Run.OfficeImageId = "AnimationStartDropdown";
+            this.button_Run.ShowImage = true;
+            this.button_Run.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_Run_Click);
+            // 
+            // button_ConfigEnviornmentPath
+            // 
+            this.button_ConfigEnviornmentPath.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.button_ConfigEnviornmentPath.Label = "Set Environment Path";
+            this.button_ConfigEnviornmentPath.Name = "button_ConfigEnviornmentPath";
+            this.button_ConfigEnviornmentPath.OfficeImageId = "AddInManager";
+            this.button_ConfigEnviornmentPath.ShowImage = true;
+            this.button_ConfigEnviornmentPath.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button_ConfigEnviornmentPath_Click);
             // 
             // button_pythonrun
             // 

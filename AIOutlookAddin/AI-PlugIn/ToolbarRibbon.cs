@@ -1,16 +1,18 @@
-﻿using Microsoft.Office.Interop.Outlook;
+﻿using AI_PlugIn.Classes;
+using AI_PlugIn.DataStructures;
+using AI_PlugIn.Enums;
+using AI_PlugIn.Utilities;
+using Microsoft.Office.Interop.Outlook;
 using Microsoft.Office.Interop.Word;
 using Microsoft.Office.Tools.Ribbon;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Threading.Tasks;
 using System.IO;
-using AI_PlugIn.Classes;
-using AI_PlugIn.DataStructures;
-using AI_PlugIn.Utilities;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace AI_PlugIn
 {
@@ -25,7 +27,6 @@ namespace AI_PlugIn
             Python = new PythonController(ConfigManager.GetPythonEnvironmentPath());
             SetUIVariables();
             LoadModelSource();
-            LoadLLMModels();
             LoadTaskSelection();
             LoadPythonVersion();
             RefreshPythonEnvironments();
@@ -44,14 +45,35 @@ namespace AI_PlugIn
 
         private void LoadModelSource()
         {
-            string[] items = { "Azure", "Local" };
+            string[] items = { "Azure", "OpenAI", "Local" };
             UIControls.LoadListControl(this,dropDown_modelSource, items);
         }
 
-        private void LoadLLMModels()
+        private void LoadOpenAILLMModels()
         {
-            string[] items = { "gpt-4o", "gpt-4o mini", "o3-mini", "o1-mini" , "o1", "o3", "gpt-4.1 mini", "gpt-4.1" };
+            string[] items = ConfigManager.GetOpenAIModels();
             UIControls.LoadListControl(this, dropDown_LMModel, items);
+        }
+
+        private void LoadAzureModels()
+        {
+            string[] items = ConfigManager.GetAzureModels();
+            UIControls.LoadListControl(this, dropDown_LMModel, items);
+        }
+
+
+        private async System.Threading.Tasks.Task LoadLocalModels()
+        {
+            OllamaWrapper ollamaWrapper = new OllamaWrapper();
+            string version = await ollamaWrapper.GetVersionAsync();
+            if (version.Length == 0)
+            {
+                UIControls.ClearDropDown(this, dropDown_LMModel);
+                return;
+            } //Escape if no version is returned
+
+            IEnumerable<string> models = await ollamaWrapper.GetAvailableModelsAsync();
+            UIControls.LoadListControl(this, dropDown_LMModel, models.ToArray());
         }
 
         private void LoadPythonVersion()
@@ -111,8 +133,9 @@ namespace AI_PlugIn
             UIControls.LoadListControl(this, dropDown_pythonScripts, file_names.ToArray());
         }
 
-        private void button_Run_Click(object sender, RibbonControlEventArgs e)
+        private async void button_Run_Click(object sender, RibbonControlEventArgs e)
         {
+            button_Run.Enabled = false;
             Result<string> result = OutlookUtilities.GetTextFromSelectedMailItem();
             if (result == null) { return; }
             if (result.ErrorEncountered)
@@ -120,9 +143,12 @@ namespace AI_PlugIn
                 MessageBox.Show(result.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            
 
-            MessageBox.Show(result.Value);
+            AIService ai = new AIService(AIProviderType.OpenAI, ConfigManager.GetApiKey(), string.Empty);
+            string model = dropDown_LMModel.SelectedItem?.Label ?? string.Empty;
+            string ai_results = await ai.GenerateText(model, "Please summarize the following email: " + result.Value, null);
+            MessageBox.Show(ai_results);
+            button_Run.Enabled = true;
         }
 
 
@@ -211,6 +237,28 @@ namespace AI_PlugIn
             System.Exception result = Python.SetVirutalEnvironmentName(selected_environment.Label);
             if(result is null) { return true; }
             return false;
+        }
+
+        private async void dropDown_modelSource_SelectionChanged(object sender, RibbonControlEventArgs e)
+        {
+            var selectedItem = dropDown_modelSource.SelectedItem;
+            if (selectedItem is null) { return; }
+
+            switch (selectedItem.Label)
+            {
+                case "Azure":
+                    LoadAzureModels();
+                    break;
+                case "OpenAI":
+                    LoadOpenAILLMModels();
+                    break;
+                case "Local":
+                    await LoadLocalModels();
+                    break;
+                default:
+                    MessageBox.Show("Model source not implemented: " + selectedItem.Label);
+                    break;
+            }
         }
     }
 }

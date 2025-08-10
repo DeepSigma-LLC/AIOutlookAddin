@@ -8,8 +8,9 @@ namespace AI_PlugIn.Enums
 {
     internal enum AIProviderType
     {
-        Local,
+        
+        Azure,
         OpenAI,
-        Azure
+        Ollama
     }
 }

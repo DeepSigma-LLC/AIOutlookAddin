@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Configuration;
 using System.Windows.Forms;
-using System.IO;
 
 namespace AI_PlugIn.Classes
 {
@@ -26,6 +27,18 @@ namespace AI_PlugIn.Classes
         internal static string GetPythonEnvironmentPath()
         {
             return ConfigurationManager.AppSettings["PythonEnvironmentPath"];
+        }
+
+        internal static string[] GetOpenAIModels()
+        {
+            var section = (NameValueCollection)ConfigurationManager.GetSection("OpenAIModels");
+            return section.AllKeys.Select(key => key).ToArray();
+        }
+
+        internal static string[] GetAzureModels()
+        {
+            var section = (NameValueCollection)ConfigurationManager.GetSection("AzureModels");
+            return section.AllKeys.Select(key => key).ToArray();
         }
 
         internal static void SetPythonEnvironmentPath(string Path)
