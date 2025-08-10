@@ -18,8 +18,6 @@ namespace AI_PlugIn
 {
     public partial class ToolbarRibbon
     {
-        private OpenAIRoute AI { get; set; }
-
         private string ScriptPath = ConfigManager.GetScriptPath();
         private PythonController Python { get; set; }
         private void ToolbarRibbon_Load(object sender, RibbonUIEventArgs e)
@@ -33,19 +31,18 @@ namespace AI_PlugIn
             LoadPythonDirectories();
 
             string key = ConfigManager.GetApiKey();
-            AI = new OpenAIRoute(key);
             
         }
 
         private void LoadTaskSelection()
         {
-            string[] items = { "Summarize", "Re-write for clarity", "Custom Prompt" };
+            string[] items = { "Summarize", "Rewrite for clarity", "Custom Prompt" };
             UIControls.LoadListControl(this, dropDown_AI_Task, items);
         }
 
         private void LoadModelSource()
         {
-            string[] items = { "Azure", "OpenAI", "Local" };
+            string[] items = { "Azure", "OpenAI", "Ollama" };
             UIControls.LoadListControl(this,dropDown_modelSource, items);
         }
 
@@ -135,7 +132,9 @@ namespace AI_PlugIn
 
         private async void button_Run_Click(object sender, RibbonControlEventArgs e)
         {
-            button_Run.Enabled = false;
+            bool valid_selection = AIRunInputValidation();
+            if (valid_selection == false) { return; };
+           
             Result<string> result = OutlookUtilities.GetTextFromSelectedMailItem();
             if (result == null) { return; }
             if (result.ErrorEncountered)
@@ -143,12 +142,41 @@ namespace AI_PlugIn
                 MessageBox.Show(result.Message, "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            if (string.IsNullOrEmpty(result.Value)) { return; }
 
-            AIService ai = new AIService(AIProviderType.OpenAI, ConfigManager.GetApiKey(), string.Empty);
+            button_Run.Enabled = false;
+            string selectedSource = dropDown_modelSource.SelectedItem?.Label ?? string.Empty;
             string model = dropDown_LMModel.SelectedItem?.Label ?? string.Empty;
+            AIService ai = new AIService(selectedSource, ConfigManager.GetApiKey(), string.Empty);
+            
             string ai_results = await ai.GenerateText(model, "Please summarize the following email: " + result.Value, null);
             MessageBox.Show(ai_results);
             button_Run.Enabled = true;
+        }
+
+        private bool AIRunInputValidation()
+        {
+            var selectedSource = dropDown_modelSource.SelectedItem;
+            if (selectedSource is null)
+            {
+                MessageBox.Show("Please select a model source.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            var selectedModel = dropDown_LMModel.SelectedItem;
+            if (selectedSource is null)
+            {
+                MessageBox.Show("Please select a valid model.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            var selectedTask = dropDown_AI_Task.SelectedItem;
+            if (selectedSource is null)
+            {
+                MessageBox.Show("Please select a valid task.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            return true;
         }
 
 
@@ -252,7 +280,7 @@ namespace AI_PlugIn
                 case "OpenAI":
                     LoadOpenAILLMModels();
                     break;
-                case "Local":
+                case "Ollama":
                     await LoadLocalModels();
                     break;
                 default:

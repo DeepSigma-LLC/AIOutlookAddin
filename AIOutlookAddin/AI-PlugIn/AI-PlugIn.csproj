@@ -305,6 +305,7 @@
     can be found.
   -->
   <ItemGroup>
+    <Compile Include="Classes\AIProcessController.cs" />
     <Compile Include="Classes\AIService.cs" />
     <Compile Include="Classes\ConfigManager.cs" />
     <Compile Include="Classes\OllamaWrapper.cs" />
@@ -312,7 +313,6 @@
     <Compile Include="Classes\PythonController.cs" />
     <Compile Include="Enums\AIProviderType.cs" />
     <Compile Include="Utilities\FileSystemUtilities.cs" />
-    <Compile Include="Classes\OpenAIRoute.cs" />
     <Compile Include="Utilities\OutlookUtilities.cs" />
     <Compile Include="DataStructures\Result.cs" />
     <Compile Include="DataStructures\TerminalResponse.cs" />

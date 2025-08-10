@@ -13,12 +13,29 @@ namespace AI_PlugIn.Classes
         private AIProviderType ProviderType { get; set; }
         private OllamaWrapper Ollama { get; set; }
         private OpenAIWrapper OpenAI { get; set; }
-        public AIService(AIProviderType providerType, string OpenAIapikey = "", string AzureApi = "")
+        public AIService(AIProviderType providerType, string OpenAIapikey = "", string AzureApi = "") 
         {
             this.ProviderType = providerType;
             this.Ollama = new OllamaWrapper();
             this.OpenAI = new OpenAIWrapper(OpenAIapikey);
             this.Ollama.OnMessageReceived += Ollama_OnMessageReceived;
+        }
+
+        public AIService(string providerType, string OpenAIapikey = "", string AzureApi = "")
+        {
+            this.ProviderType = ConvertStringToEnum(providerType);
+            this.Ollama = new OllamaWrapper();
+            this.OpenAI = new OpenAIWrapper(OpenAIapikey);
+            this.Ollama.OnMessageReceived += Ollama_OnMessageReceived;
+        }
+
+        private AIProviderType ConvertStringToEnum(string providerType)
+        {
+            if (Enum.TryParse(providerType, true, out AIProviderType result))
+            {
+                return result;
+            }
+            throw new ArgumentException($"Invalid provider type: {providerType}");
         }
 
         public async Task<string> GenerateText(string model, string userPrompt, Uri AzureEndpoint)
